@@ -11,4 +11,5 @@ variable "lambda_functions" {
 variable "monitor_handlers" {
   type        = list(string)
   description = "The list of lambda functions that will be deployed by Terraform"
+  default = ["critical-alert-teams-webhook", "lambda-heartbeat-watchdog"]
 }
