@@ -1,0 +1,45 @@
+image:
+  name: <account_id>.dkr.ecr.eu-west-1.amazonaws.com/terraform:latest
+  aws:
+    oidc-role: arn:aws:iam::<account_id>:role/bitbucket-ecr-access
+
+definitions:
+  commonSteps:
+    - step: &build-critical-alert-binary
+        name: Build Critical Alert Binary
+        oidc: true
+        image:
+          name: <account_id>.dkr.ecr.eu-west-1.amazonaws.com/golang:1.25
+          aws:
+            oidc-role: arn:aws:iam::<account_id>:role/<role_name>
+        artifacts:
+          - artifacts/**/*
+        script:
+          - cd src/critical-alert-teams-webhook
+          - GOARCH=amd64 GOOS=linux go build -tags lambda.norpc -o ../artifacts/critical-alert-teams-webhook/bootstrap handler.go main.go
+
+    - step: &run-plan
+        name: Run plan
+        oidc: true
+        script:
+          - cd terraform
+          - terraform workspace select -or-create lambda-heartbeat-watchdog
+          - terraform plan
+
+pipelines:
+  pull-requests:
+    "**":
+      - step: *build-critical-alert-binary
+      - step: *run-plan
+
+  branches:
+    main:
+      - step: *build-critical-alert-binary
+      - step: *run-plan
+      - step:
+          name: Run apply
+          oidc: true
+          script:
+            - cd terraform
+            - terraform workspace select -or-create dev-cloudwatch-monitoring
+            - terraform apply -input=false -auto-approve

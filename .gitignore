@@ -1,0 +1,9 @@
+**/*.tfvars
+**/*.terraform.lock.hcl
+**/*.terraform
+**/provider.tf
+**/backend.tf
+artifacts
+**/.DS_Store
+**/bootstrap
+.idea
