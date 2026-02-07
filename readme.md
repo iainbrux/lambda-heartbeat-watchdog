@@ -1,9 +1,9 @@
-Copyright © 2026 Iain Brookes
+###### Copyright © 2026 Iain Brookes
 
-All rights reserved.
+###### All rights reserved.
 
-This source code may not be used, copied, modified, or distributed
-without explicit written permission from the author.
+###### This source code may not be used, copied, modified or distributed without explicit written permission from the author.
+
 ---
 # Lambda Heartbeat Watchdog
 
