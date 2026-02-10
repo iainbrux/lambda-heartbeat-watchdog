@@ -8,22 +8,30 @@ resource "aws_iam_role" "critical_alert_teams_webhook" {
 }
 
 resource "aws_iam_role_policy" "critical_alert_teams_webhook_inline_logging" {
-  name   = "logging-policy"
+  name   = "LoggingPolicy"
   role   = aws_iam_role.critical_alert_teams_webhook.id
   policy = data.aws_iam_policy_document.critical_alert_teams_webhook_logging_policy.json
 }
 
-resource "aws_iam_role_policy" "critical_alert_teams_webhook_pubsub" {
-  name   = "pubsub-policy"
+resource "aws_iam_role_policy" "critical_alert_teams_webhook_dynamodb_inline" {
+  name   = "DdbPolicy"
   role   = aws_iam_role.critical_alert_teams_webhook.id
-  policy = data.aws_iam_policy_document.critical_alert_teams_webhook_pubsub_policy.json
+  policy = data.aws_iam_policy_document.critical_alert_teams_webhook_dynamodb_policy.json
+}
+
+resource "aws_iam_role_policy" "critical_alert_teams_webhook_sns_inline" {
+  name   = "SnsPolicy"
+  role   = aws_iam_role.critical_alert_teams_webhook.id
+  policy = data.aws_iam_policy_document.critical_alert_teams_webhook_dynamodb_policy.json
 }
 
 resource "aws_iam_role_policy" "cloudwatch_alarms_policy" {
-  name   = "cloudwatch-alarms-policy"
+  name   = "CloudWatchAlarmsPolicy"
   role   = aws_iam_role.critical_alert_teams_webhook.id
   policy = data.aws_iam_policy_document.cloudwatch_alarms_policy.json
 }
+
+// Would be good to move the 4 iam policy resources into a for_each loop
 
 data "aws_iam_policy_document" "critical_alert_teams_webhook_assume_policy" {
   statement {
@@ -65,13 +73,17 @@ data "aws_iam_policy_document" "cloudwatch_alarms_policy" {
   }
 }
 
-data "aws_iam_policy_document" "critical_alert_teams_webhook_pubsub_policy" {
+data "aws_iam_policy_document" "critical_alert_teams_webhook_dynamodb_policy" {
   statement {
     sid    = "PubSubPolicy"
     effect = "Allow"
     actions = [
-      "dynamodb:*",
-      "sns:*",
+      "dynamodb:PutItem",
+      "dynamodb:UpdateItem",
+      "dynamodb:GetItem",
+      "dynamodb:DescribeTable",
+      "dynamodb:Query",
+      "sns:Publish",
     ]
     resources = [aws_sns_topic.critical_alerting_topic.arn, data.aws_dynamodb_table.lambda_heartbeats.arn]
   }
